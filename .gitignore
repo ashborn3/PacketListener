@@ -54,3 +54,4 @@ dkms.conf
 main
 .vscode
 packet_log.db
+packet_log.db-journal
