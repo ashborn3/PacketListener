@@ -196,12 +196,12 @@ void process_packet(const unsigned char *buffer, int size) {
     //     return;
     // }
 
-    printf("\n=== Data Link Layer ===\n");
-    printf("Source MAC: ");
-    print_mac(eth->h_source);
-    printf("\nDestination MAC: ");
-    print_mac(eth->h_dest);
-    printf("\nEther Type: 0x%04x\n", ntohs(eth->h_proto));
+    // printf("\n=== Data Link Layer ===\n");
+    // printf("Source MAC: ");
+    // print_mac(eth->h_source);
+    // printf("\nDestination MAC: ");
+    // print_mac(eth->h_dest);
+    // printf("\nEther Type: 0x%04x\n", ntohs(eth->h_proto));
 
     record->source_mac = get_mac_address(eth->h_source);
     record->dest_mac = get_mac_address(eth->h_dest);
@@ -213,21 +213,21 @@ void process_packet(const unsigned char *buffer, int size) {
         src.sin_addr.s_addr = ip_header->saddr;
         dest.sin_addr.s_addr = ip_header->daddr;
 
-        printf("\n=== Network Layer ===\n");
-        printf("Source IP: %s\n", inet_ntoa(src.sin_addr));
-        printf("Destination IP: %s\n", inet_ntoa(dest.sin_addr));
+        // printf("\n=== Network Layer ===\n");
+        // printf("Source IP: %s\n", inet_ntoa(src.sin_addr));
+        // printf("Destination IP: %s\n", inet_ntoa(dest.sin_addr));
 
         record->source_ip = inet_ntoa(src.sin_addr);
         record->dest_ip = inet_ntoa(dest.sin_addr);
 
         if (ip_header->protocol == IPPROTO_ICMP) {
-            printf("\n=== Transport Layer (ICMP) ===\n");
-            printf("ICMP Packet\n");
+            // printf("\n=== Transport Layer (ICMP) ===\n");
+            // printf("ICMP Packet\n");
             const unsigned char *payload = buffer + sizeof(struct ethhdr) + (ip_header->ihl * 4);
             int payload_size = size - (sizeof(struct ethhdr) + (ip_header->ihl * 4));
-            if (payload_size > 0) {
-                print_payload(payload, payload_size);
-            }
+            // if (payload_size > 0) {
+            //     print_payload(payload, payload_size);
+            // }
 
             char* icmp = "ICMP";
 
@@ -246,17 +246,17 @@ void process_packet(const unsigned char *buffer, int size) {
 
         if (ip_header->protocol == IPPROTO_TCP) {
             struct tcphdr *tcp_header = (struct tcphdr *)(buffer + sizeof(struct ethhdr) + (ip_header->ihl * 4));
-            printf("\n=== Transport Layer (TCP) ===\n");
-            printf("Source Port: %u\n", ntohs(tcp_header->source));
-            printf("Destination Port: %u\n", ntohs(tcp_header->dest));
+            // printf("\n=== Transport Layer (TCP) ===\n");
+            // printf("Source Port: %u\n", ntohs(tcp_header->source));
+            // printf("Destination Port: %u\n", ntohs(tcp_header->dest));
 
             const unsigned char *payload = buffer + sizeof(struct ethhdr) + (ip_header->ihl * 4) + (tcp_header->doff * 4);
             int payload_size = size - (sizeof(struct ethhdr) + (ip_header->ihl * 4) + (tcp_header->doff * 4));
 
-            if (payload_size > 0) {
-                printf("\n=== Application Layer ===\n");
-                print_payload(payload, payload_size);
-            }
+            // if (payload_size > 0) {
+            //     printf("\n=== Application Layer ===\n");
+            //     print_payload(payload, payload_size);
+            // }
 
             char* tcp = "TCP";
 
@@ -274,17 +274,17 @@ void process_packet(const unsigned char *buffer, int size) {
 
         } else if (ip_header->protocol == IPPROTO_UDP) {
             struct udphdr *udp_header = (struct udphdr *)(buffer + sizeof(struct ethhdr) + (ip_header->ihl * 4));
-            printf("\n=== Transport Layer (UDP) ===\n");
-            printf("Source Port: %u\n", ntohs(udp_header->source));
-            printf("Destination Port: %u\n", ntohs(udp_header->dest));
+            // printf("\n=== Transport Layer (UDP) ===\n");
+            // printf("Source Port: %u\n", ntohs(udp_header->source));
+            // printf("Destination Port: %u\n", ntohs(udp_header->dest));
 
             const unsigned char *payload = buffer + sizeof(struct ethhdr) + (ip_header->ihl * 4) + sizeof(struct udphdr);
             int payload_size = size - (sizeof(struct ethhdr) + (ip_header->ihl * 4) + sizeof(struct udphdr));
 
-            if (payload_size > 0) {
-                printf("\n=== Application Layer ===\n");
-                print_payload(payload, payload_size);
-            }
+            // if (payload_size > 0) {
+            //     printf("\n=== Application Layer ===\n");
+            //     print_payload(payload, payload_size);
+            // }
 
             char* udp = "UDP";
 
@@ -344,3 +344,4 @@ int main() {
     free(buffer);
     return 0;
 }
+ 
