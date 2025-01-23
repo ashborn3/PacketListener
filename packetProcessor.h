@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef PACKETPROCESSOR_H
+#define PACKETPROCESSOR_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,13 +31,15 @@ struct record {
 
 typedef struct record Record;
 
+int initMain();
+
 void print_mac(const unsigned char *mac);
 char* get_mac_address(char *if_name);
 void print_payload(const unsigned char *payload, int size);
 char* get_payload(const unsigned char *payload, int size);
 char* get_protocol(int protocol);
-int initSqliteDb(const char *db_name);
+int initSqliteDb();
 int insertRecord(Record* record);
 void process_packet(const unsigned char *buffer, int size);
 
-#endif // MAIN_H
+#endif // PACKETPROCESSOR_H

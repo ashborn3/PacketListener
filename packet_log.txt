@@ -1,0 +1,6 @@
+Number of unique source IPs: 16
+Number of unique destination IPs: 16
+Number of unique source ports: 48
+Number of unique destination ports: 66
+Source IP with most packets sent: 127.0.0.1 (8304 packets)
+Destination IP with most packets received: 127.0.0.1 (8304 packets)

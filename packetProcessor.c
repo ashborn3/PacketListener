@@ -12,22 +12,24 @@
 #include <sys/ioctl.h>
 #include <linux/if_packet.h>
 
+#include "packetProcessor.h"
+
 #include "sqlite/sqlite3.h"
 
-#define BUFFER_SIZE 65536
+// #define BUFFER_SIZE 65536
 
-struct record {
-    char* dest_ip;
-    char* source_ip;
-    char* source_mac;
-    char* dest_mac;
-    int source_port;
-    int dest_port;
-    char* protocol;
-    char* payload;
-};
+// struct record {
+//     char* dest_ip;
+//     char* source_ip;
+//     char* source_mac;
+//     char* dest_mac;
+//     int source_port;
+//     int dest_port;
+//     char* protocol;
+//     char* payload;
+// };
 
-typedef struct record Record;
+// typedef struct record Record;
 
 Record records[BUFFER_SIZE];
 
@@ -115,7 +117,7 @@ int initSqliteDb() {
                 "source_ip TEXT,"
                 "dest_ip TEXT,"
                 "source_mac TEXT,"
-                "dest_mac TEXT,"
+                "dest_mac TEXT,"    
                 "source_port TEXT,"
                 "dest_port TEXT,"
                 "protocol TEXT,"
@@ -147,7 +149,7 @@ int insertRecord(Record* record) {
         return 1;
     }
 
-    printf("Record: %x\n", record);
+    // printf("Record: %x\n", record);
 
     char sourceIp[128];
     char destIp[128];
@@ -303,7 +305,7 @@ void process_packet(const unsigned char *buffer, int size) {
     }
 }
 
-int main() {
+int initMain() {
     int raw_socket;
     struct sockaddr saddr;
     socklen_t saddr_size;
@@ -326,13 +328,11 @@ int main() {
         perror("Socket creation failed");
         return 1;
     }
-
-    printf("Starting packet capture...\n");
-
+    
     while (1) {
         saddr_size = sizeof(saddr);
         int data_size = recvfrom(raw_socket, buffer, BUFFER_SIZE, 0, &saddr, &saddr_size);
-        printf("\nRecieved Data of size: %d\n", data_size);
+        // printf("\nRecieved Data of size: %d\n", data_size);
         if (data_size < 0) {
             perror("Failed to capture packets");
             break;
@@ -344,4 +344,3 @@ int main() {
     free(buffer);
     return 0;
 }
- 
