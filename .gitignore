@@ -52,6 +52,7 @@ Mkfile.old
 dkms.conf
 
 main
+go_main
 .vscode
 packet_log.db
 packet_log.db-journal
