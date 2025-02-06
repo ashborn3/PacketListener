@@ -86,7 +86,6 @@ char* get_payload(const unsigned char *payload, int size) {
     return payload_str;
 }
 
-
 char* get_protocol(int protocol) {
     switch (protocol) {
         case IPPROTO_TCP:
@@ -149,8 +148,6 @@ int insertRecord(Record* record) {
         return 1;
     }
 
-    // printf("Record: %x\n", record);
-
     char sourceIp[128];
     char destIp[128];
     char sourceMac[128];
@@ -173,7 +170,6 @@ int insertRecord(Record* record) {
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
 
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "SQL error: %s\n", err_msg);
         sqlite3_free(err_msg);
         sqlite3_close(db);
         return 1;

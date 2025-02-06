@@ -24,44 +24,47 @@ func main() {
 	defer ticker.Stop()
 
 	for range ticker.C {
-		printLiveStats(dbPath)
+		fmt.Printf("\r%s", prepareLiveStats(dbPath))
 	}
 }
 
-func printLiveStats(dbPath string) {
+func prepareLiveStats(dbPath string) string {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error opening database: %s\n", err)
+		return ""
 	}
 	defer db.Close()
+
+	var liveStat string = "Live Stats:\n"
 
 	var uniqueSourceIPs int
 	err = db.QueryRow("SELECT COUNT(DISTINCT source_ip) FROM records").Scan(&uniqueSourceIPs)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Number of unique source IPs: %d\n", uniqueSourceIPs)
+	liveStat += fmt.Sprintf("Number of unique source IPs: %d\n", uniqueSourceIPs)
 
 	var uniqueDestIPs int
 	err = db.QueryRow("SELECT COUNT(DISTINCT dest_ip) FROM records").Scan(&uniqueDestIPs)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Number of unique destination IPs: %d\n", uniqueDestIPs)
+	liveStat += fmt.Sprintf("Number of unique destination IPs: %d\n", uniqueDestIPs)
 
 	var uniqueSourcePorts int
 	err = db.QueryRow("SELECT COUNT(DISTINCT source_port) FROM records").Scan(&uniqueSourcePorts)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Number of unique source ports: %d\n", uniqueSourcePorts)
+	liveStat += fmt.Sprintf("Number of unique source ports: %d\n", uniqueSourcePorts)
 
 	var uniqueDestPorts int
 	err = db.QueryRow("SELECT COUNT(DISTINCT dest_port) FROM records").Scan(&uniqueDestPorts)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Number of unique destination ports: %d\n", uniqueDestPorts)
+	liveStat += fmt.Sprintf("Number of unique destination ports: %d\n", uniqueDestPorts)
 
 	var sourceIPMostPackets string
 	var packetsSent int
@@ -69,7 +72,7 @@ func printLiveStats(dbPath string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Source IP with most packets sent: %s (%d packets)\n", sourceIPMostPackets, packetsSent)
+	liveStat += fmt.Sprintf("Source IP with most packets sent: %s (%d packets)\n", sourceIPMostPackets, packetsSent)
 
 	var destIPMostPackets string
 	var packetsReceived int
@@ -77,5 +80,7 @@ func printLiveStats(dbPath string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Destination IP with most packets received: %s (%d packets)\n", destIPMostPackets, packetsReceived)
+	liveStat += fmt.Sprintf("Destination IP with most packets received: %s (%d packets)\n", destIPMostPackets, packetsReceived)
+
+	return liveStat
 }
