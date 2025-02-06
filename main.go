@@ -38,49 +38,46 @@ func prepareLiveStats(dbPath string) string {
 
 	var liveStat string = "Live Stats:\n"
 
-	var uniqueSourceIPs int
-	err = db.QueryRow("SELECT COUNT(DISTINCT source_ip) FROM records").Scan(&uniqueSourceIPs)
-	if err != nil {
-		log.Fatal(err)
+	queries := []struct {
+		query string
+		dest  interface{}
+		label string
+	}{
+		{"SELECT COUNT(DISTINCT source_ip) FROM records", new(int), "Number of unique source IPs: %d\n"},
+		{"SELECT COUNT(DISTINCT dest_ip) FROM records", new(int), "Number of unique destination IPs: %d\n"},
+		{"SELECT COUNT(DISTINCT source_port) FROM records", new(int), "Number of unique source ports: %d\n"},
+		{"SELECT COUNT(DISTINCT dest_port) FROM records", new(int), "Number of unique destination ports: %d\n"},
+		{"SELECT source_ip, COUNT(*) as packet_count FROM records GROUP BY source_ip ORDER BY packet_count DESC LIMIT 1", new(struct {
+			sourceIP    string
+			packetCount int
+		}), "Source IP with most packets sent: %s (%d packets)\n"},
+		{"SELECT dest_ip, COUNT(*) as packet_count FROM records GROUP BY dest_ip ORDER BY packet_count DESC LIMIT 1", new(struct {
+			destIP      string
+			packetCount int
+		}), "Destination IP with most packets received: %s (%d packets)\n"},
 	}
-	liveStat += fmt.Sprintf("Number of unique source IPs: %d\n", uniqueSourceIPs)
 
-	var uniqueDestIPs int
-	err = db.QueryRow("SELECT COUNT(DISTINCT dest_ip) FROM records").Scan(&uniqueDestIPs)
-	if err != nil {
-		log.Fatal(err)
-	}
-	liveStat += fmt.Sprintf("Number of unique destination IPs: %d\n", uniqueDestIPs)
+	for _, q := range queries {
+		err := db.QueryRow(q.query).Scan(q.dest)
+		if err != nil {
+			log.Printf("Error executing query: %s\n", err)
+		}
 
-	var uniqueSourcePorts int
-	err = db.QueryRow("SELECT COUNT(DISTINCT source_port) FROM records").Scan(&uniqueSourcePorts)
-	if err != nil {
-		log.Fatal(err)
+		switch v := q.dest.(type) {
+		case *int:
+			liveStat += fmt.Sprintf(q.label, *v)
+		case *struct {
+			sourceIP    string
+			packetCount int
+		}:
+			liveStat += fmt.Sprintf(q.label, v.sourceIP, v.packetCount)
+		case *struct {
+			destIP      string
+			packetCount int
+		}:
+			liveStat += fmt.Sprintf(q.label, v.destIP, v.packetCount)
+		}
 	}
-	liveStat += fmt.Sprintf("Number of unique source ports: %d\n", uniqueSourcePorts)
-
-	var uniqueDestPorts int
-	err = db.QueryRow("SELECT COUNT(DISTINCT dest_port) FROM records").Scan(&uniqueDestPorts)
-	if err != nil {
-		log.Fatal(err)
-	}
-	liveStat += fmt.Sprintf("Number of unique destination ports: %d\n", uniqueDestPorts)
-
-	var sourceIPMostPackets string
-	var packetsSent int
-	err = db.QueryRow("SELECT source_ip, COUNT(*) as packet_count FROM records GROUP BY source_ip ORDER BY packet_count DESC LIMIT 1").Scan(&sourceIPMostPackets, &packetsSent)
-	if err != nil {
-		log.Fatal(err)
-	}
-	liveStat += fmt.Sprintf("Source IP with most packets sent: %s (%d packets)\n", sourceIPMostPackets, packetsSent)
-
-	var destIPMostPackets string
-	var packetsReceived int
-	err = db.QueryRow("SELECT dest_ip, COUNT(*) as packet_count FROM records GROUP BY dest_ip ORDER BY packet_count DESC LIMIT 1").Scan(&destIPMostPackets, &packetsReceived)
-	if err != nil {
-		log.Fatal(err)
-	}
-	liveStat += fmt.Sprintf("Destination IP with most packets received: %s (%d packets)\n", destIPMostPackets, packetsReceived)
 
 	return liveStat
 }

@@ -190,9 +190,9 @@ void process_packet(const unsigned char *buffer, int size) {
     struct sockaddr_in dest;
     dest.sin_addr.s_addr = ip_header->daddr;
 
-    // if (strcmp(inet_ntoa(dest.sin_addr), "127.0.0.1") == 0) {
-    //     return;
-    // }
+    if (strcmp(inet_ntoa(dest.sin_addr), "127.0.0.1") == 0) {
+        return;
+    }
 
     // printf("\n=== Data Link Layer ===\n");
     // printf("Source MAC: ");
