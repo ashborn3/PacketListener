@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Network Packet Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #status {
+      margin-bottom: 1rem;
+      color: #666;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .payload-cell {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live Network Packet Records</h1>
+  <div id="status">Loading data...</div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Source IP</th>
+        <th>Dest IP</th>
+        <th>Source MAC</th>
+        <th>Dest MAC</th>
+        <th>Src Port</th>
+        <th>Dest Port</th>
+        <th>Protocol</th>
+        <th>Payload</th>
+      </tr>
+    </thead>
+    <tbody id="data-body"></tbody>
+  </table>
+
+  <script>
+    const status = document.getElementById('status');
+    const tbody = document.getElementById('data-body');
+
+    async function fetchData() {
+      try {
+        status.textContent = "Fetching data...";
+        const response = await fetch('/data');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const records = await response.json();
+        renderTable(records);
+        status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      } catch (err) {
+        console.error(err);
+        status.textContent = 'Failed to fetch data';
+      }
+    }
+
+    function renderTable(records) {
+      tbody.innerHTML = ''; // Clear existing rows
+
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9">No records found.</td></tr>';
+        return;
+      }
+
+      records.forEach(record => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${record.id}</td>
+          <td>${record.source_ip}</td>
+          <td>${record.dest_ip}</td>
+          <td>${record.source_mac}</td>
+          <td>${record.dest_mac}</td>
+          <td>${record.source_port}</td>
+          <td>${record.dest_port}</td>
+          <td>${record.protocol}</td>
+          <td class="payload-cell" title="${record.payload}">${record.payload}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    fetchData();
+    setInterval(fetchData, 5000); // Refresh every 5 seconds
+  </script>
+</body>
+</html>

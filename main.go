@@ -2,82 +2,73 @@ package main
 
 // #cgo LDFLAGS: -L. -lpacketProcessor
 // #include "packetProcessor.h"
-import (
-	"C"
-)
+import "C"
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
-	"time"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
-	go C.initMain()
-
-	dbPath := "packet_log.db"
-
-	ticker := time.NewTicker(1 * time.Second)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		fmt.Printf("\r%s", prepareLiveStats(dbPath))
-	}
+type Record struct {
+	ID         int    `json:"id"`
+	SourceIP   string `json:"source_ip"`
+	DestIP     string `json:"dest_ip"`
+	SourceMAC  string `json:"source_mac"`
+	DestMAC    string `json:"dest_mac"`
+	SourcePort string `json:"source_port"`
+	DestPort   string `json:"dest_port"`
+	Protocol   string `json:"protocol"`
+	Payload    string `json:"payload"`
 }
 
-func prepareLiveStats(dbPath string) string {
+func main() {
+	go C.initMain() // start packet logging in background
+
+	dbPath := "packet_log.db"
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		log.Printf("Error opening database: %s\n", err)
-		return ""
+		log.Fatal("Failed to open DB:", err)
 	}
 	defer db.Close()
 
-	var liveStat string = "Live Stats:\n"
+	r := gin.Default()
 
-	queries := []struct {
-		query string
-		dest  interface{}
-		label string
-	}{
-		{"SELECT COUNT(DISTINCT source_ip) FROM records", new(int), "Number of unique source IPs: %d\n"},
-		{"SELECT COUNT(DISTINCT dest_ip) FROM records", new(int), "Number of unique destination IPs: %d\n"},
-		{"SELECT COUNT(DISTINCT source_port) FROM records", new(int), "Number of unique source ports: %d\n"},
-		{"SELECT COUNT(DISTINCT dest_port) FROM records", new(int), "Number of unique destination ports: %d\n"},
-		{"SELECT source_ip, COUNT(*) as packet_count FROM records GROUP BY source_ip ORDER BY packet_count DESC LIMIT 1", new(struct {
-			sourceIP    string
-			packetCount int
-		}), "Source IP with most packets sent: %s (%d packets)\n"},
-		{"SELECT dest_ip, COUNT(*) as packet_count FROM records GROUP BY dest_ip ORDER BY packet_count DESC LIMIT 1", new(struct {
-			destIP      string
-			packetCount int
-		}), "Destination IP with most packets received: %s (%d packets)\n"},
-	}
+	// Serve static files
+	r.Static("/static", "./static")
+	r.GET("/", func(c *gin.Context) {
+		c.File("./static/index.html")
+	})
 
-	for _, q := range queries {
-		err := db.QueryRow(q.query).Scan(q.dest)
+	// API endpoint to get records
+	r.GET("/data", func(c *gin.Context) {
+		rows, err := db.Query(`SELECT id, source_ip, dest_ip, source_mac, dest_mac,
+		source_port, dest_port, protocol, payload FROM records ORDER BY id DESC LIMIT 50`)
 		if err != nil {
-			log.Printf("Error executing query: %s\n", err)
+			log.Println("DB error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		results := make([]Record, 0) // ensures [] even if no rows
+		for rows.Next() {
+			var r Record
+			if err := rows.Scan(&r.ID, &r.SourceIP, &r.DestIP, &r.SourceMAC, &r.DestMAC,
+				&r.SourcePort, &r.DestPort, &r.Protocol, &r.Payload); err != nil {
+				log.Println("Row scan error:", err)
+				continue
+			}
+			results = append(results, r)
 		}
 
-		switch v := q.dest.(type) {
-		case *int:
-			liveStat += fmt.Sprintf(q.label, *v)
-		case *struct {
-			sourceIP    string
-			packetCount int
-		}:
-			liveStat += fmt.Sprintf(q.label, v.sourceIP, v.packetCount)
-		case *struct {
-			destIP      string
-			packetCount int
-		}:
-			liveStat += fmt.Sprintf(q.label, v.destIP, v.packetCount)
-		}
-	}
+		// always returns [] or populated array, never null
+		c.JSON(http.StatusOK, results)
+	})
 
-	return liveStat
+	log.Println("Server running at http://localhost:8080")
+	r.Run(":8080")
 }

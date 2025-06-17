@@ -302,6 +302,10 @@ void process_packet(const unsigned char *buffer, int size) {
 }
 
 int initMain() {
+
+    printf("C initMain started...\n");
+    fflush(stdout); // make sure it prints immediately
+    
     int raw_socket;
     struct sockaddr saddr;
     socklen_t saddr_size;
