@@ -2,43 +2,251 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Network Packet Viewer</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      padding: 2rem;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    h1 {
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding: 1rem;
       color: #333;
     }
 
-    #status {
-      margin-bottom: 1rem;
-      color: #666;
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .title-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    h1 {
+      color: #2d3548;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 1.1rem;
+      margin-top: 0.25rem;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .filters {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 300px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s;
+      background: #f9fafb;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+    }
+
+    .filter-select {
+      padding: 0.75rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      background: #f9fafb;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+
+    .packet-count {
+      background: #667eea;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.25rem;
+    }
+
+    .table-description {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      font-size: 0.9rem;
     }
 
     th {
-      background-color: #007BFF;
-      color: white;
+      background: #f8fafc;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.875rem;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 0.875rem;
+      vertical-align: top;
+    }
+
+    tr {
+      transition: background-color 0.2s;
     }
 
     tbody tr:hover {
-      background-color: #f1f1f1;
+      background-color: #f8fafc;
+    }
+
+    .protocol-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .protocol-tcp { background: #dbeafe; color: #1d4ed8; }
+    .protocol-udp { background: #f3e8ff; color: #7c3aed; }
+    .protocol-http { background: #ecfdf5; color: #059669; }
+    .protocol-https { background: #fef2f2; color: #dc2626; }
+    .protocol-dns { background: #fffbeb; color: #d97706; }
+    .protocol-icmp { background: #f0f9ff; color: #0284c7; }
+
+    .ip-info {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .mac-address {
+      color: #6b7280;
+      font-size: 0.75rem;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     }
 
     .payload-cell {
@@ -46,73 +254,587 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .payload-cell:hover {
+      background: linear-gradient(90deg, transparent, #f3f4f6, transparent);
+    }
+
+    .view-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .view-btn:hover {
+      background: #5a67d8;
+      transform: translateY(-1px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #6b7280;
+    }
+
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 3rem;
+      color: #6b7280;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 0.25rem;
+      border-radius: 4px;
+    }
+
+    .close-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .detail-section {
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    .detail-section h4 {
+      color: #374151;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .detail-label {
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .detail-value {
+      color: #1f2937;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+
+    .payload-section {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .debug-info {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .filters { flex-direction: column; align-items: stretch; }
+      .search-box { min-width: auto; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .modal-content { width: 95%; padding: 1rem; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 0.5rem; }
     }
   </style>
 </head>
 <body>
-  <h1>Live Network Packet Records</h1>
-  <div id="status">Loading data...</div>
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Source IP</th>
-        <th>Dest IP</th>
-        <th>Source MAC</th>
-        <th>Dest MAC</th>
-        <th>Src Port</th>
-        <th>Dest Port</th>
-        <th>Protocol</th>
-        <th>Payload</th>
-      </tr>
-    </thead>
-    <tbody id="data-body"></tbody>
-  </table>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="title-section">
+        <div class="icon">🌐</div>
+        <div>
+          <h1>Network Packet Viewer</h1>
+          <div class="subtitle">Real-time network traffic monitoring</div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="status">
+          <div class="status-indicator"></div>
+          <span id="status-text">Loading data...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          class="search-input" 
+          id="search-input"
+          placeholder="Search packets by IP, protocol, or payload..."
+        >
+      </div>
+      <select class="filter-select" id="protocol-filter">
+        <option value="all">All Protocols</option>
+      </select>
+      <div class="packet-count" id="packet-count">0 packets</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <div class="table-title">📡 Live Packet Records</div>
+        <div class="table-description">Real-time network traffic analysis and monitoring</div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Protocol</th>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Ports</th>
+              <th>Size</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="data-body">
+            <tr>
+              <td colspan="7" class="loading">Loading packets...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="packet-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">🛡️ Packet Details</div>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
 
   <script>
-    const status = document.getElementById('status');
+    let allPackets = [];
+    let filteredPackets = [];
+    
+    const statusText = document.getElementById('status-text');
     const tbody = document.getElementById('data-body');
+    const searchInput = document.getElementById('search-input');
+    const protocolFilter = document.getElementById('protocol-filter');
+    const packetCount = document.getElementById('packet-count');
+    const modal = document.getElementById('packet-modal');
+    const modalBody = document.getElementById('modal-body');
+
+    // Real packet data fetcher - replace with your actual data source
+    async function fetchRealPacketData() {
+      // Example: Fetch from your backend API that captures real packets
+      const response = await fetch('/api/packets');
+      return await response.json();
+    }
+
+    // Mock data generator with realistic payload examples
+    function generateRealisticMockPackets() {
+      const mockPackets = [];
+      
+      // HTTP GET Request
+      mockPackets.push({
+        id: 1,
+        source_ip: "192.168.1.100",
+        dest_ip: "93.184.216.34",
+        source_mac: "00:1B:44:11:3A:01",
+        dest_mac: "00:50:56:C0:00:0B",
+        source_port: 54321,
+        dest_port: 80,
+        protocol: "HTTP",
+        payload: "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: text/html,application/xhtml+xml\r\nConnection: keep-alive\r\n\r\n",
+        timestamp: new Date(Date.now() - 1000).toISOString(),
+        size: 234
+      });
+
+      // DNS Query
+      mockPackets.push({
+        id: 2,
+        source_ip: "192.168.1.100",
+        dest_ip: "8.8.8.8",
+        source_mac: "00:1B:44:11:3A:01",
+        dest_mac: "00:50:56:C0:00:0C",
+        source_port: 53241,
+        dest_port: 53,
+        protocol: "DNS",
+        payload: "\\x12\\x34\\x01\\x00\\x00\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x07example\\x03com\\x00\\x00\\x01\\x00\\x01",
+        timestamp: new Date(Date.now() - 2000).toISOString(),
+        size: 32
+      });
+
+      // HTTPS Handshake
+      mockPackets.push({
+        id: 3,
+        source_ip: "192.168.1.100",
+        dest_ip: "172.217.14.196",
+        source_mac: "00:1B:44:11:3A:01",
+        dest_mac: "00:50:56:C0:00:0D",
+        source_port: 54322,
+        dest_port: 443,
+        protocol: "HTTPS",
+        payload: "\\x16\\x03\\x01\\x00\\xc4\\x01\\x00\\x00\\xc0\\x03\\x03\\x52\\x34\\x12\\x56\\x78\\x9a\\xbc\\xde\\xf0... [TLS ClientHello - encrypted handshake data]",
+        timestamp: new Date(Date.now() - 3000).toISOString(),
+        size: 517
+      });
+
+      // TCP SYN
+      mockPackets.push({
+        id: 4,
+        source_ip: "192.168.1.100",
+        dest_ip: "10.0.0.50",
+        source_mac: "00:1B:44:11:3A:01",
+        dest_mac: "00:50:56:C0:00:0E",
+        source_port: 54323,
+        dest_port: 22,
+        protocol: "TCP",
+        payload: "[TCP SYN] Seq=0 Win=65535 Options=[MSS 1460,WS 7,TSval 123456789,TSecr 0,SACK_PERM]",
+        timestamp: new Date(Date.now() - 4000).toISOString(),
+        size: 74
+      });
+
+      // ICMP Ping
+      mockPackets.push({
+        id: 5,
+        source_ip: "192.168.1.100",
+        dest_ip: "8.8.8.8",
+        source_mac: "00:1B:44:11:3A:01",
+        dest_mac: "00:50:56:C0:00:0F",
+        source_port: 0,
+        dest_port: 0,
+        protocol: "ICMP",
+        payload: "\\x08\\x00\\xf7\\xfc\\x00\\x00\\x00\\x00Hello, this is ping data with timestamp and sequence numbers",
+        timestamp: new Date(Date.now() - 5000).toISOString(),
+        size: 64
+      });
+
+      // Add more realistic packets
+      for (let i = 6; i <= 25; i++) {
+        const protocols = ['TCP', 'UDP', 'HTTP'];
+        const protocol = protocols[Math.floor(Math.random() * protocols.length)];
+        let payload = "";
+        
+        switch(protocol) {
+          case 'HTTP':
+            payload = `POST /api/data HTTP/1.1\\r\\nHost: api.example.com\\r\\nContent-Type: application/json\\r\\nContent-Length: 45\\r\\n\\r\\n{"user_id": ${i}, "action": "update", "data": "test"}`;
+            break;
+          case 'TCP':
+            payload = `[TCP Data] Seq=${i * 1000} Ack=${i * 1000 + 500} PSH,ACK Win=65535 Len=${Math.floor(Math.random() * 1000)}`;
+            break;
+          case 'UDP':
+            payload = `\\x${i.toString(16).padStart(2, '0')}\\x${((i*2) % 256).toString(16).padStart(2, '0')}\\x${((i*3) % 256).toString(16).padStart(2, '0')}... [UDP payload ${i}]`;
+            break;
+        }
+        
+        mockPackets.push({
+          id: i,
+          source_ip: `192.168.1.${100 + (i % 50)}`,
+          dest_ip: `10.0.0.${10 + (i % 240)}`,
+          source_mac: `00:1B:44:11:3A:${i.toString(16).padStart(2, '0').toUpperCase()}`,
+          dest_mac: `00:50:56:C0:00:${(i + 10).toString(16).padStart(2, '0').toUpperCase()}`,
+          source_port: 50000 + i,
+          dest_port: 8000 + (i % 1000),
+          protocol,
+          payload,
+          timestamp: new Date(Date.now() - (i * 1000)).toISOString(),
+          size: Math.floor(Math.random() * 1400) + 64
+        });
+      }
+      
+      return mockPackets;
+    }
 
     async function fetchData() {
       try {
-        status.textContent = "Fetching data...";
-        const response = await fetch('/data');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const records = await response.json();
-        renderTable(records);
-        status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        statusText.textContent = "Fetching data...";
+        
+        // For production: Replace with real packet capture
+        // const realData = await fetchRealPacketData();
+        
+        // For demo: Use realistic mock data
+        await new Promise(resolve => setTimeout(resolve, 800));
+        const mockData = generateRealisticMockPackets();
+        
+        allPackets = mockData;
+        updateProtocolFilter();
+        applyFilters();
+        statusText.textContent = `Last updated: ${new Date().toLocaleTimeString()} (Demo Mode)`;
       } catch (err) {
-        console.error(err);
-        status.textContent = 'Failed to fetch data';
+        console.error('Error fetching data:', err);
+        statusText.textContent = 'Failed to fetch data';
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">❌ Failed to fetch packet data</td></tr>';
       }
     }
 
-    function renderTable(records) {
-      tbody.innerHTML = ''; // Clear existing rows
+    function updateProtocolFilter() {
+      const protocols = [...new Set(allPackets.map(p => p.protocol))];
+      const currentValue = protocolFilter.value;
+      
+      protocolFilter.innerHTML = '<option value="all">All Protocols</option>';
+      protocols.forEach(protocol => {
+        const option = document.createElement('option');
+        option.value = protocol;
+        option.textContent = protocol;
+        protocolFilter.appendChild(option);
+      });
+      
+      protocolFilter.value = currentValue;
+    }
 
-      if (records.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9">No records found.</td></tr>';
+    function applyFilters() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const selectedProtocol = protocolFilter.value;
+      
+      filteredPackets = allPackets.filter(packet => {
+        const matchesSearch = !searchTerm || 
+          packet.source_ip.toLowerCase().includes(searchTerm) ||
+          packet.dest_ip.toLowerCase().includes(searchTerm) ||
+          packet.protocol.toLowerCase().includes(searchTerm) ||
+          packet.payload.toLowerCase().includes(searchTerm);
+        
+        const matchesProtocol = selectedProtocol === 'all' || packet.protocol === selectedProtocol;
+        
+        return matchesSearch && matchesProtocol;
+      });
+      
+      renderTable();
+      updatePacketCount();
+    }
+
+    function renderTable() {
+      if (filteredPackets.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">📭 No packets found matching your criteria</td></tr>';
         return;
       }
 
-      records.forEach(record => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${record.id}</td>
-          <td>${record.source_ip}</td>
-          <td>${record.dest_ip}</td>
-          <td>${record.source_mac}</td>
-          <td>${record.dest_mac}</td>
-          <td>${record.source_port}</td>
-          <td>${record.dest_port}</td>
-          <td>${record.protocol}</td>
-          <td class="payload-cell" title="${record.payload}">${record.payload}</td>
-        `;
-        tbody.appendChild(row);
-      });
+      tbody.innerHTML = filteredPackets.map(packet => `
+        <tr>
+          <td><strong>#${packet.id}</strong></td>
+          <td><span class="protocol-badge protocol-${packet.protocol.toLowerCase()}">${packet.protocol}</span></td>
+          <td>
+            <div class="ip-info">${packet.source_ip}</div>
+            <div class="mac-address">${packet.source_mac}</div>
+          </td>
+          <td>
+            <div class="ip-info">${packet.dest_ip}</div>
+            <div class="mac-address">${packet.dest_mac}</div>
+          </td>
+          <td class="ip-info">${packet.source_port} → ${packet.dest_port}</td>
+          <td>${packet.size ? `${packet.size} bytes` : 'N/A'}</td>
+          <td>
+            <button class="view-btn" onclick="showPacketDetails(${packet.id})">
+              👁️ View
+            </button>
+          </td>
+        </tr>
+      `).join('');
     }
 
+    function updatePacketCount() {
+      packetCount.textContent = `${filteredPackets.length} packets`;
+    }
+
+    function showPacketDetails(packetId) {
+      console.log('Looking for packet ID:', packetId);
+      console.log('Available packets:', allPackets.map(p => ({id: p.id, hasPayload: !!p.payload})));
+      
+      const packet = allPackets.find(p => p.id === packetId);
+      
+      if (!packet) {
+        console.error('Packet not found with ID:', packetId);
+        modalBody.innerHTML = '<div class="debug-info">❌ Error: Packet not found</div>';
+        modal.style.display = 'block';
+        return;
+      }
+
+      console.log('Found packet:', packet);
+      console.log('Packet payload:', packet.payload);
+
+      modalBody.innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-section">
+            <h4>🌐 Source Information</h4>
+            <div class="detail-item">
+              <span class="detail-label">IP Address:</span>
+              <span class="detail-value">${packet.source_ip}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">MAC Address:</span>
+              <span class="detail-value">${packet.source_mac}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Port:</span>
+              <span class="detail-value">${packet.source_port}</span>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>🎯 Destination Information</h4>
+            <div class="detail-item">
+              <span class="detail-label">IP Address:</span>
+              <span class="detail-value">${packet.dest_ip}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">MAC Address:</span>
+              <span class="detail-value">${packet.dest_mac}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Port:</span>
+              <span class="detail-value">${packet.dest_port}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="detail-section" style="margin-bottom: 1.5rem;">
+          <h4>📊 Protocol & Metadata</h4>
+          <div class="detail-item">
+            <span class="detail-label">Protocol:</span>
+            <span class="detail-value">${packet.protocol}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Size:</span>
+            <span class="detail-value">${packet.size || 'Unknown'} bytes</span>
+          </div>
+          ${packet.timestamp ? `
+            <div class="detail-item">
+              <span class="detail-label">Timestamp:</span>
+              <span class="detail-value">${new Date(packet.timestamp).toLocaleString()}</span>
+            </div>
+          ` : ''}
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+          <h4 style="color: #374151; margin-bottom: 0.5rem;">📦 Payload Data</h4>
+        </div>
+        <div class="payload-section">${packet.payload ? packet.payload : 'No payload data available'}</div>
+      `;
+
+      modal.style.display = 'block';
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', applyFilters);
+    protocolFilter.addEventListener('change', applyFilters);
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    // Initialize
     fetchData();
     setInterval(fetchData, 5000); // Refresh every 5 seconds
   </script>
