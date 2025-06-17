@@ -1,18 +1,22 @@
 # Packet Sniffer
 
-This project is a simple packet sniffer implemented in C. It captures network packets and logs their details to a file.
+This project is a packet sniffer implemented in C. It captures network packets and logs their details to a database. The backend is a go gin gonic router and the frontend is written in vanilla javascript with searching and filtering capabilities.
 
 ## Files
 
-- `main.c`: The main source code file for the packet sniffer.
-- `Makefile`: The makefile to build and run the project.
+- `main.go`: The gin gonic router serving the webpage and goroutine for starting the packet sniffer.
+- `packetProcessor.c`: The source code for the packet sniffer.
+- `pacjetProcessor.h`: The header file with packet sniffer function prototypes.
+- `static/index.html`: The index file containing the beautiful and breaktaking frontend. :| /s
+- `sqlite/*`: The sqlite dependencies for c.
 - `.gitignore`: Specifies files and directories to be ignored by Git.
-- `settings.json`: VS Code settings for file associations.
+
 
 ## Requirements
 
 - GCC (GNU Compiler Collection)
 - Linux operating system (for raw socket support)
+- Go 1.18+
 
 ## Building the Project
 
@@ -27,10 +31,10 @@ make build
 To run the packet sniffer, use the following command:
 
 ```sh
-make run
+sudo make run
 ```
 
-The packet sniffer will start capturing packets and log the details to `packet_log.txt`.
+The packet sniffer will start capturing packets and log the details to `packet_log.db`.
 
 ## Cleaning Up
 
