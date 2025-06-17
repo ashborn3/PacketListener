@@ -6,6 +6,7 @@ import "C"
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -45,8 +46,22 @@ func main() {
 
 	// API endpoint to get records
 	r.GET("/data", func(c *gin.Context) {
-		rows, err := db.Query(`SELECT id, source_ip, dest_ip, source_mac, dest_mac,
-		source_port, dest_port, protocol, payload FROM records ORDER BY id DESC LIMIT 50`)
+		limit := 50
+		offset := 0
+
+		if l := c.Query("limit"); l != "" {
+			fmt.Sscanf(l, "%d", &limit)
+		}
+		if o := c.Query("offset"); o != "" {
+			fmt.Sscanf(o, "%d", &offset)
+		}
+
+		query := `SELECT id, source_ip, dest_ip, source_mac, dest_mac,
+	source_port, dest_port, protocol, payload FROM records
+	ORDER BY id DESC LIMIT ? OFFSET ?`
+
+		rows, err := db.Query(query, limit, offset)
+
 		if err != nil {
 			log.Println("DB error:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -64,7 +79,7 @@ func main() {
 			}
 			results = append(results, r)
 		}
-
+		fmt.Println(len(results))
 		// always returns [] or populated array, never null
 		c.JSON(http.StatusOK, results)
 	})
