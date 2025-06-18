@@ -2,695 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Network Packet Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      min-height: 100vh;
-      padding: 1rem;
-      color: #333;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .title-section {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 24px;
-    }
-
-    h1 {
-      color: #2d3548;
-      font-size: 2.5rem;
-      font-weight: 700;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
       margin: 0;
+      padding: 20px;
     }
-
-    .subtitle {
-      color: #6b7280;
-      font-size: 1.1rem;
-      margin-top: 0.25rem;
+    h1 {
+      color: #38bdf8;
+      text-align: center;
     }
-
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      font-size: 0.9rem;
-      color: #374151;
-    }
-
-    .status-indicator {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10b981;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    .filters {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      margin-bottom: 2rem;
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .search-box {
-      flex: 1;
-      min-width: 300px;
-      position: relative;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: all 0.2s;
-      background: #f9fafb;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #667eea;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #9ca3af;
-    }
-
-    .filter-select {
-      padding: 0.75rem 1rem;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      background: #f9fafb;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .filter-select:focus {
-      outline: none;
-      border-color: #667eea;
-      background: white;
-    }
-
-    .packet-count {
-      background: #667eea;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .table-container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-    }
-
-    .table-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .table-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #1f2937;
-      margin-bottom: 0.25rem;
-    }
-
-    .table-description {
-      color: #6b7280;
-      font-size: 0.9rem;
-    }
-
-    .table-wrapper {
-      overflow-x: auto;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 20px;
     }
-
+    th, td {
+      border: 1px solid #334155;
+      padding: 8px;
+      text-align: center;
+    }
     th {
-      background: #f8fafc;
-      padding: 1rem;
-      text-align: left;
-      font-weight: 600;
-      color: #374151;
-      font-size: 0.875rem;
-      border-bottom: 2px solid #e5e7eb;
-      white-space: nowrap;
+      background: #1e293b;
     }
-
-    td {
-      padding: 1rem;
-      border-bottom: 1px solid #f3f4f6;
-      font-size: 0.875rem;
-      vertical-align: top;
+    tr:nth-child(even) {
+      background: #1e293b;
     }
-
-    tr {
-      transition: background-color 0.2s;
+    tr.new-row {
+      animation: fadeIn 1s ease-in-out;
+      background-color: #166534 !important;
     }
-
-    tbody tr:hover {
-      background-color: #f8fafc;
-    }
-
-    .protocol-badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .protocol-tcp { background: #dbeafe; color: #1d4ed8; }
-    .protocol-udp { background: #f3e8ff; color: #7c3aed; }
-    .protocol-http { background: #ecfdf5; color: #059669; }
-    .protocol-https { background: #fef2f2; color: #dc2626; }
-    .protocol-dns { background: #fffbeb; color: #d97706; }
-    .protocol-icmp { background: #f0f9ff; color: #0284c7; }
-
-    .ip-info {
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.8rem;
-    }
-
-    .mac-address {
-      color: #6b7280;
-      font-size: 0.75rem;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    }
-
-    .payload-cell {
-      max-width: 200px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .payload-cell:hover {
-      background: linear-gradient(90deg, transparent, #f3f4f6, transparent);
-    }
-
-    .view-btn {
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    .view-btn:hover {
-      background: #5a67d8;
-      transform: translateY(-1px);
-    }
-
-    .loading {
-      text-align: center;
-      padding: 3rem;
-      color: #6b7280;
-    }
-
-    .loading::after {
-      content: '';
-      display: inline-block;
-      width: 24px;
-      height: 24px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #667eea;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-left: 0.5rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .no-data {
-      text-align: center;
-      padding: 3rem;
-      color: #6b7280;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border-radius: 12px;
-      padding: 2rem;
-      max-width: 600px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #1f2937;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #6b7280;
-      padding: 0.25rem;
-      border-radius: 4px;
-    }
-
-    .close-btn:hover {
-      background: #f3f4f6;
-    }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .detail-section {
-      background: #f8fafc;
-      padding: 1rem;
-      border-radius: 8px;
-    }
-
-    .detail-section h4 {
-      color: #374151;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .detail-item {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .detail-label {
-      color: #6b7280;
-      font-weight: 500;
-    }
-
-    .detail-value {
-      color: #1f2937;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    }
-
-    .payload-section {
-      background: #1f2937;
-      color: #f9fafb;
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 0.8rem;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-
-    .debug-info {
-      background: #fef3c7;
-      border: 1px solid #f59e0b;
-      color: #92400e;
-      padding: 0.75rem;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-      font-size: 0.8rem;
-    }
-
-    @media (max-width: 768px) {
-      h1 { font-size: 2rem; }
-      .header { flex-direction: column; align-items: flex-start; }
-      .filters { flex-direction: column; align-items: stretch; }
-      .search-box { min-width: auto; }
-      .detail-grid { grid-template-columns: 1fr; }
-      .modal-content { width: 95%; padding: 1rem; }
-      table { font-size: 0.8rem; }
-      th, td { padding: 0.5rem; }
+    @keyframes fadeIn {
+      from { background-color: #22c55e; }
+      to { background-color: #166534; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div class="title-section">
-        <div class="icon">🌐</div>
-        <div>
-          <h1>Network Packet Viewer</h1>
-          <div class="subtitle">Real-time network traffic monitoring</div>
-        </div>
-      </div>
-      <div class="controls">
-        <div class="status">
-          <div class="status-indicator"></div>
-          <span id="status-text">Loading data...</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="filters">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input 
-          type="text" 
-          class="search-input" 
-          id="search-input"
-          placeholder="Search packets by IP, protocol, or payload..."
-        >
-      </div>
-      <select class="filter-select" id="protocol-filter">
-        <option value="all">All Protocols</option>
-      </select>
-      <div class="packet-count" id="packet-count">0 packets</div>
-    </div>
-
-    <!-- Table -->
-    <div class="table-container">
-      <div class="table-header">
-        <div class="table-title">📡 Live Packet Records</div>
-        <div class="table-description">Real-time network traffic analysis and monitoring</div>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Protocol</th>
-              <th>Source</th>
-              <th>Destination</th>
-              <th>Ports</th>
-              <th>Size</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="data-body">
-            <tr>
-              <td colspan="7" class="loading">Loading packets...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div class="modal" id="packet-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">🛡️ Packet Details</div>
-        <button class="close-btn" onclick="closeModal()">&times;</button>
-      </div>
-      <div id="modal-body"></div>
-    </div>
-  </div>
+  <h1>Live Packet Log</h1>
+  <table id="packetTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Source IP</th>
+        <th>Destination IP</th>
+        <th>Source MAC</th>
+        <th>Destination MAC</th>
+        <th>Source Port</th>
+        <th>Destination Port</th>
+        <th>Protocol</th>
+        <th>Payload</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
-  let allPackets = [];
-  let filteredPackets = [];
-  let offset = 0;
-  const limit = 50;
-  let isLoading = false;
-  let endReached = false;
+    let lastSeenId = null;
 
-  const statusText = document.getElementById('status-text');
-  const tbody = document.getElementById('data-body');
-  const searchInput = document.getElementById('search-input');
-  const protocolFilter = document.getElementById('protocol-filter');
-  const packetCount = document.getElementById('packet-count');
-  const modal = document.getElementById('packet-modal');
-  const modalBody = document.getElementById('modal-body');
+    async function fetchPackets() {
+      try {
+        const res = await fetch('/data?limit=100&offset=0');
+        const records = await res.json();
 
-  async function fetchData(append = false) {
-    if (isLoading || endReached) return;
-    isLoading = true;
-    statusText.textContent = "Fetching data...";
+        const tbody = document.querySelector('#packetTable tbody');
+        tbody.innerHTML = ''; // clear current rows
 
-    try {
-      const response = await fetch(`/data?limit=${limit}&offset=${offset}`);
-      const newPackets = await response.json();
+        for (let record of records) {
+          const row = document.createElement('tr');
+          if (lastSeenId && record.id > lastSeenId) {
+            row.classList.add('new-row');
+          }
 
-      if (!Array.isArray(newPackets)) throw new Error("Invalid response from server");
+          row.innerHTML = `
+            <td>${record.id}</td>
+            <td>${record.source_ip}</td>
+            <td>${record.dest_ip}</td>
+            <td>${record.source_mac}</td>
+            <td>${record.dest_mac}</td>
+            <td>${record.source_port}</td>
+            <td>${record.dest_port}</td>
+            <td>${record.protocol}</td>
+            <td>${record.payload}</td>
+          `;
+          tbody.appendChild(row);
+        }
 
-      if (newPackets.length < limit) {
-        endReached = true;
+        if (records.length > 0) {
+          lastSeenId = records[0].id; // highest ID
+        }
+
+      } catch (err) {
+        console.error('Failed to fetch packet data:', err);
       }
-
-      if (append) {
-        allPackets = allPackets.concat(newPackets);
-      } else {
-        allPackets = newPackets;
-      }
-
-      updateProtocolFilter();
-      applyFilters();
-      offset += limit;
-      statusText.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      statusText.textContent = "Failed to fetch data.";
-      tbody.innerHTML = '<tr><td colspan="7" class="no-data">❌ Failed to fetch packet data</td></tr>';
     }
 
-    isLoading = false;
-  }
+    // Initial load
+    fetchPackets();
 
-  function updateProtocolFilter() {
-    const protocols = [...new Set(allPackets.map(p => p.protocol))];
-    const currentValue = protocolFilter.value;
-
-    protocolFilter.innerHTML = '<option value="all">All Protocols</option>';
-    protocols.forEach(protocol => {
-      const option = document.createElement('option');
-      option.value = protocol;
-      option.textContent = protocol;
-      protocolFilter.appendChild(option);
-    });
-
-    protocolFilter.value = currentValue;
-  }
-
-  function applyFilters() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedProtocol = protocolFilter.value;
-
-    filteredPackets = allPackets.filter(packet => {
-      const matchesSearch = !searchTerm ||
-        packet.source_ip.toLowerCase().includes(searchTerm) ||
-        packet.dest_ip.toLowerCase().includes(searchTerm) ||
-        packet.protocol.toLowerCase().includes(searchTerm) ||
-        packet.payload.toLowerCase().includes(searchTerm);
-
-      const matchesProtocol = selectedProtocol === 'all' || packet.protocol === selectedProtocol;
-
-      return matchesSearch && matchesProtocol;
-    });
-
-    renderTable();
-    updatePacketCount();
-  }
-
-  function renderTable() {
-    if (filteredPackets.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="no-data">📭 No packets found matching your criteria</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = filteredPackets.map((packet, idx) => `
-      <tr>
-        <td><strong>#${idx + 1}</strong></td>
-        <td><span class="protocol-badge protocol-${packet.protocol.toLowerCase()}">${packet.protocol}</span></td>
-        <td>
-          <div class="ip-info">${packet.source_ip}</div>
-          <div class="mac-address">${packet.source_mac}</div>
-        </td>
-        <td>
-          <div class="ip-info">${packet.dest_ip}</div>
-          <div class="mac-address">${packet.dest_mac}</div>
-        </td>
-        <td class="ip-info">${packet.source_port} → ${packet.dest_port}</td>
-        <td>${packet.size ? `${packet.size} bytes` : 'N/A'}</td>
-        <td>
-          <button class="view-btn" onclick="showPacketDetails(${packet.id})">
-            👁️ View
-          </button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  function updatePacketCount() {
-    packetCount.textContent = `${filteredPackets.length} packets`;
-  }
-
-  function showPacketDetails(packetId) {
-    const packet = allPackets.find(p => p.id === packetId);
-
-    if (!packet) {
-      modalBody.innerHTML = '<div class="debug-info">❌ Error: Packet not found</div>';
-      modal.style.display = 'block';
-      return;
-    }
-
-    modalBody.innerHTML = `
-      <div class="detail-grid">
-        <div class="detail-section">
-          <h4>🌐 Source Information</h4>
-          <div class="detail-item"><span class="detail-label">IP Address:</span><span class="detail-value">${packet.source_ip}</span></div>
-          <div class="detail-item"><span class="detail-label">MAC Address:</span><span class="detail-value">${packet.source_mac}</span></div>
-          <div class="detail-item"><span class="detail-label">Port:</span><span class="detail-value">${packet.source_port}</span></div>
-        </div>
-        <div class="detail-section">
-          <h4>🎯 Destination Information</h4>
-          <div class="detail-item"><span class="detail-label">IP Address:</span><span class="detail-value">${packet.dest_ip}</span></div>
-          <div class="detail-item"><span class="detail-label">MAC Address:</span><span class="detail-value">${packet.dest_mac}</span></div>
-          <div class="detail-item"><span class="detail-label">Port:</span><span class="detail-value">${packet.dest_port}</span></div>
-        </div>
-      </div>
-      <div class="detail-section">
-        <h4>📊 Protocol & Metadata</h4>
-        <div class="detail-item"><span class="detail-label">Protocol:</span><span class="detail-value">${packet.protocol}</span></div>
-        <div class="detail-item"><span class="detail-label">Size:</span><span class="detail-value">${packet.size || 'Unknown'} bytes</span></div>
-        ${packet.timestamp ? `<div class="detail-item"><span class="detail-label">Timestamp:</span><span class="detail-value">${new Date(packet.timestamp).toLocaleString()}</span></div>` : ''}
-      </div>
-      <div style="margin-bottom: 1rem;"><h4 style="color: #374151; margin-bottom: 0.5rem;">📦 Payload Data</h4></div>
-      <div class="payload-section">${packet.payload || 'No payload data available'}</div>
-    `;
-
-    modal.style.display = 'block';
-  }
-
-  function closeModal() {
-    modal.style.display = 'none';
-  }
-
-  searchInput.addEventListener('input', applyFilters);
-  protocolFilter.addEventListener('change', applyFilters);
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-  });
-
-  // Infinite scroll
-  document.querySelector('.table-wrapper').addEventListener('scroll', (e) => {
-    const el = e.target;
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
-      fetchData(true); // fetch and append more
-    }
-  });
-
-  fetchData(); // Initial fetch
-</script>
-
+    // Refresh every 5 seconds
+    setInterval(fetchPackets, 1000);
+  </script>
 </body>
 </html>
