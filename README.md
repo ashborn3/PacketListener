@@ -6,7 +6,7 @@ This project is a packet sniffer implemented in C. It captures network packets a
 
 - `main.go`: The gin gonic router serving the webpage and goroutine for starting the packet sniffer.
 - `packetProcessor.c`: The source code for the packet sniffer.
-- `pacjetProcessor.h`: The header file with packet sniffer function prototypes.
+- `packetProcessor.h`: The header file with packet sniffer function prototypes.
 - `static/index.html`: The index file containing the beautiful and breaktaking frontend. :| /s
 - `sqlite/*`: The sqlite dependencies for c.
 - `.gitignore`: Specifies files and directories to be ignored by Git.
